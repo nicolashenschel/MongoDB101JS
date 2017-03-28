@@ -3,7 +3,7 @@ var express = require('express'),
     engines = require('consolidate'),
     bodyParser = require('body-parser'),
     MongoClient = require('mongodb').MongoClient,
-    config = require('config'),
+    config = require('./config'),
     assert = require('assert');
 
 app.engine('html', engines.nunjucks);
@@ -12,13 +12,7 @@ app.set('views', __dirname + '/views');
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(errorHandler);
 
-assert(config.has('dbConfig.host'),'Missing Database host');
-assert(config.has('dbConfig.port'),'Missing Database port');
-assert(config.has('dbConfig.dbName'),'Missing Database name');
-var url =  'mongodb://' +
-            config.get('dbConfig.host') + ':' +
-            config.get('dbConfig.port') + '/' +
-            config.get('dbConfig.dbName');
+var url = config.getDBUrl();
 console.log('Using Database Url: ' + url);
 
 var insertDocument = function(db, req, callback) {
