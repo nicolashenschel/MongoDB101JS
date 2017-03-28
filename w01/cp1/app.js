@@ -2,7 +2,8 @@ var express = require('express'),
     app = express(),
     engines = require('consolidate'),
     bodyParser = require('body-parser'),
-    MongoClient = require('mongodb').MongoClient
+    MongoClient = require('mongodb').MongoClient,
+    config = require('config'),
     assert = require('assert');
 
 app.engine('html', engines.nunjucks);
@@ -11,7 +12,14 @@ app.set('views', __dirname + '/views');
 app.use(bodyParser.urlencoded({ extended: true })); 
 app.use(errorHandler);
 
-var url = 'mongodb://localhost:27017/video';
+assert(config.has('dbConfig.host'),'Missing Database host');
+assert(config.has('dbConfig.port'),'Missing Database port');
+assert(config.has('dbConfig.dbName'),'Missing Database name');
+var url =  'mongodb://' +
+            config.get('dbConfig.host') + ':' +
+            config.get('dbConfig.port') + '/' +
+            config.get('dbConfig.dbName');
+console.log('Using Database Url: ' + url);
 
 var insertDocument = function(db, req, callback) {
   var title = req.body.title;
