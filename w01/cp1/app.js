@@ -3,8 +3,9 @@ var express = require('express'),
     engines = require('consolidate'),
     bodyParser = require('body-parser'),
     MongoClient = require('mongodb').MongoClient,
+    assert = require('assert'),
     config = require('./config'),
-    assert = require('assert');
+    mongo = require('./mongo');
 
 app.engine('html', engines.nunjucks);
 app.set('view engine', 'html');
@@ -14,22 +15,6 @@ app.use(errorHandler);
 
 var url = config.getDBUrl();
 console.log('Using Database Url: ' + url);
-
-var insertDocument = function(db, req, callback) {
-  var title = req.body.title;
-  var imdb = req.body.imdb;
-  var year = req.body.year;
-  var collection = db.collection('movies');
-  
-  collection.insert({"title": title, "imdb": imdb, "year": year},
-   function(err, result) {
-    assert.equal(err, null);
-    assert.equal(1, result.result.n);
-    assert.equal(1, result.ops.length);
-    console.log("Inserted a document into the collection");
-    callback(result);
-  });
-}
 
 // Handler for internal server errors
 function errorHandler(err, req, res, next) {
@@ -53,7 +38,7 @@ MongoClient.connect(url, function(err, db) {
     });
     
     app.post('/addmovie', function(req, res, next) {
-        insertDocument(db, req, function() {
+        mongo.insertDocument(db, req, function() {
             db.collection('movies').find({}).toArray(function(err, docs) {
                 res.render('movies', { 'movies': docs } );
             });
